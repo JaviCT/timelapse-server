@@ -4,26 +4,9 @@ import os
 import shutil
 from skimage.measure import compare_ssim
 import datetime
-from blur_detection import get_time
 
 class ColorAnalyser():
-    def __init__(self, imageLoc, folder):
-        image = cv2.imread(imageLoc, 1)
-        self.img = cv2.resize(image, (0,0), fx=0.1, fy=0.1)
-        self.colors_count = {}
-        self.w, self.h, self.channels = self.img.shape
-        self.total_pixels = self.w*self.h
-        self.color = 0
-        self.gray = 0
-        self.loc = imageLoc
-        self.percentage_of_first = 0
-        self.blur = 0
-        self.black = 0
-        self.folder = folder
-
     def compare_images(self, prevPath):
-        print("Prev: ", prevPath)
-        print("This: ", self.loc)
         score = 0
         if prevPath:
             imageA = cv2.imread(prevPath, 1)
@@ -78,7 +61,6 @@ class ColorAnalyser():
                 else:
                     self.colors_count[RGB] = 1
 
-        print("Color: " + str(self.color) + ", Gray: " + str(self.gray))
         if self.color < 100:
             print("GRAY")
             self.black = 1
@@ -117,14 +99,26 @@ class ColorAnalyser():
         seconds = dt.timestamp()
         return int(seconds)
 
-    def main(self, aux4, prevPath, folder):
+    def main(self, imageLoc, prevPath, folder):
+        image = cv2.imread(imageLoc, 1)
+        self.img = cv2.resize(image, (0,0), fx=0.1, fy=0.1)
+        self.colors_count = {}
+        self.w, self.h, self.channels = self.img.shape
+        self.total_pixels = self.w*self.h
+        self.color = 0
+        self.gray = 0
+        self.loc = imageLoc
+        self.percentage_of_first = 0
+        self.blur = 0
+        self.black = 0
+        self.folder = folder
         if ((self.img == None).all()):
             print("No image data. Check image location for typos")
         else:
             self.count_colors()
         dif = self.compare_images(prevPath)
         if self.black == 0 and self.blur == 0 and dif < 0.95:
-            self.move()
+            # self.move()
             return True
         else:
             return False
