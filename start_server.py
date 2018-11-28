@@ -1,27 +1,86 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, Response
 from werkzeug import secure_filename
 from main import main
 import threading
+import json
+import subprocess
 
 app = Flask(__name__)
 @app.route('/api', methods=['POST'])
 
 def result():
-    print(request.get_data())
+    # print(request.get_data())
+    print(request.form)
     f = request.files['logo']
-    f.save(os.path.join("./assets/images", secure_filename(f.filename)))
-    create = True
-    analyze = True
-    blur = True
+    logo_name = secure_filename(f.filename)
+    f.save(os.path.join("./assets/images", logo_name))
+    blur = False
     date = False
     motion = False
     threshold = 100
-    get_images = True
-    t = threading.Thread(target=main, args = (request.form['camera_id'], request.form['position'],threshold, create, analyze, blur, date, motion, get_images))
-    t.daemon = True
-    t.start()
-    return 'Done'
+    
+    cmd = "cat /proc/mounts | grep 'SeaweedFS'"
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = ps.communicate()[0]
+    output = output.decode('utf-8')
+    print(output)
+    if not output:    
+        t = threading.Thread(target=main, args = (request.form['exid'], request.form['camera_id'],request.form['from'], request.form['to'], request.form['schedule'], request.form['position'], threshold, logo_name, request.form['analyze'], request.form['duration'], request.form['headers'], blur, date, motion))
+        t.daemon = True
+        t.start()
+    
+        return Response(json.dumps({
+            'success': True,
+            'status': 200
+        }), mimetype=u'application/json')
+    else:
+        with open('pending.json', 'w') as outfile:
+            json.dump(request.form, outfile)
+        with open('pending.json') as data_file:    
+            data = json.load(data_file)
+            print(data)
+        return Response(json.dumps({
+            'success': False,
+            'status': 204
+        }), mimetype=u'application/json')
+    
+@app.route('/api2', methods=['POST'])
+
+def result2():
+    # print(request.get_data())
+    print(request.form)
+
+    logo_name = "none"
+    blur = False
+    date = False
+    motion = False
+    threshold = 100
+    
+    cmd = "cat /proc/mounts | grep 'SeaweedFS'"
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    output = ps.communicate()[0]
+    output = output.decode('utf-8')
+    print(output)
+    if not output:    
+        t = threading.Thread(target=main, args = (request.form['exid'], request.form['camera_id'],request.form['from'], request.form['to'], request.form['schedule'], request.form['position'], threshold, logo_name, request.form['analyze'], request.form['duration'], request.form['headers'], blur, date, motion))
+        t.daemon = True
+        t.start()
+    
+        return Response(json.dumps({
+            'success': True,
+            'status': 200
+        }), mimetype=u'application/json')
+    else:
+        with open('pending.json', 'w') as outfile:
+            json.dump(request.form, outfile)
+        with open('pending.json') as data_file:    
+            data = json.load(data_file)
+            print(data)
+        return Response(json.dumps({
+            'success': False,
+            'status': 204
+        }), mimetype=u'application/json')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
