@@ -3,20 +3,13 @@ import os
 import PIL
 from PIL import Image
 import boto3
-import shlex
+import shutil
 
-def create_mp4(assets, logo_position, camera_id, title, logo_name):
+def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
     if os.path.exists("result/" + camera_id + ".mp4"):
         os.remove("result/" + camera_id + ".mp4")
 
     mywidth = 300
-
-    if os.path.exists('assets/images/' + logo_name):
-        img = Image.open('assets/images/' + logo_name)
-        wpercent = (mywidth/float(img.size[0]))
-        hsize = int((float(img.size[1])*float(wpercent)))
-        img = img.resize((mywidth,hsize), PIL.Image.ANTIALIAS)
-        img.save('logo-resize.png')
 
     # Create timelapse
     subprocess.call('ffmpeg -f concat -i "camera.txt" -vf fps=24 -pix_fmt yuv420p timelapse.mp4', shell = True)
@@ -55,16 +48,29 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name):
     else:
         # Top-left
         position = " overlay=5:5"
-        
-    print("Logo position: ", position)
-    subprocess.call("ffmpeg -i timelapse.mp4 -i logo-resize.png -filter_complex '[0:v][1:v] " + position + "' -pix_fmt yuv420p -c:a copy timelapse2.mp4", shell = True)
-    # From second 0 to seconf 20 -> enable='between(t,0,20)'
+     
+    if logo_position >= "0":
+        if os.path.exists('assets/images/' + logo_name):
+            img = Image.open('assets/images/' + logo_name)
+            wpercent = (mywidth/float(img.size[0]))
+            hsize = int((float(img.size[1])*float(wpercent)))
+            img = img.resize((mywidth,hsize), PIL.Image.ANTIALIAS)
+            img.save('logo-resize.png')
+        print("Logo position: ", position)
+        subprocess.call("ffmpeg -i timelapse.mp4 -i logo-resize.png -filter_complex '[0:v][1:v] " + position + "' -pix_fmt yuv420p -c:a copy timelapse2.mp4", shell = True)
+        # From second 0 to seconf 20 -> enable='between(t,0,20)'
+    else:
+        shutil.move("timelapse.mp4", "timelapse2.mp4")
 
     # Add header
-    subprocess.call("ffmpeg -i assets/video/intro.mp4 -acodec libvo_aacenc -vcodec libx264 -s 1920x1080 -r 60 -strict experimental intro.mp4", shell = True)
-    subprocess.call("ffmpeg -i assets/video/contact.mp4 -acodec libvo_aacenc -vcodec libx264 -s 1920x1080 -r 60 -strict experimental contact.mp4", shell = True)
-    subprocess.call("ffmpeg -i timelapse2.mp4 -acodec libvo_aacenc -vcodec libx264 -s 1920x1080 -r 60 -strict experimental timelapse3.mp4", shell = True)
-    subprocess.call("ffmpeg -f concat -i pathList.txt -c copy output.mp4", shell = True)
+    if headers == "true":
+        subprocess.call("ffmpeg -i assets/video/intro.mp4 -acodec libvo_aacenc -vcodec libx264 -s 1920x1080 -r 60 -strict experimental intro.mp4", shell = True)
+        subprocess.call("ffmpeg -i assets/video/contact.mp4 -acodec libvo_aacenc -vcodec libx264 -s 1920x1080 -r 60 -strict experimental contact.mp4", shell = True)
+        subprocess.call("ffmpeg -i timelapse2.mp4 -acodec libvo_aacenc -vcodec libx264 -s 1920x1080 -r 60 -strict experimental timelapse3.mp4", shell = True)
+        subprocess.call("ffmpeg -f concat -i pathList.txt -c copy output.mp4", shell = True)
+    else:
+        if os.path.exists("timelapse2.mp4"):
+            shutil.move("timelapse2.mp4", "output.mp4")
 
     # Add audio
     if not os.path.exists("result"):
@@ -74,7 +80,7 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name):
     # upload_zip(camera_id, title, assets)
     if os.path.exists("result/" + camera_id + ".mp4"):
         upload_mp4(camera_id, title, assets)
-        os.remove("result/" + camera_id + ".mp4")
+        #os.remove("result/" + camera_id + ".mp4")
 
     if os.path.exists("logo-resize.png"):
         os.remove("logo-resize.png")
