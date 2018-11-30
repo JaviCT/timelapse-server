@@ -7,14 +7,17 @@ import datetime
 
 class ColorAnalyser():
     def compare_images(self, prevPath):
-        score = 0
+        score = 100
         if prevPath:
-            imageA = cv2.imread(prevPath, 1)
-            imageA = cv2.resize(imageA, (0,0), fx=0.1, fy=0.1)
-            grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
-            grayB = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-
-            (score, diff) = compare_ssim(grayA, grayB, full=True)
+            try:
+                imageA = cv2.imread(prevPath, 1)
+                imageA = cv2.resize(imageA, (0,0), fx=0.1, fy=0.1)
+                grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+                grayB = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+    
+                (score, diff) = compare_ssim(grayA, grayB, full=True)
+            except cv2.error as e:
+                print(e)
 
         return score
 
@@ -118,7 +121,7 @@ class ColorAnalyser():
             else:
                 self.count_colors()
             dif = self.compare_images(prevPath)
-            if self.black == 0 and self.blur == 0 and dif < 0.95:
+            if self.black == 0 and self.blur == 0 and dif < 0.94:
                 # self.move()
                 return True
             else:

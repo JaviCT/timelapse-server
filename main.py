@@ -8,6 +8,7 @@ import shutil
 import calendar
 import ast
 from PIL import Image
+from decouple import config
 
 def get_title():
     dt = datetime.datetime.now()
@@ -93,6 +94,7 @@ def valid_hour(schedule, s):
         return False
 
 def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo_name, analyze, duration, headers, blur, date, motion):
+    WEED_FILE = config('WEED_FILE')
     start_time = time.time()
     Analyzer = ColorAnalyser()
     prevPath = None
@@ -101,7 +103,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
         os.makedirs(folder)
     if not os.path.exists("media/" + camera_id):
         os.makedirs("media/" + camera_id)
-    command_line = "/home/javict/evercam/machinelearning/timelapse-server/weed mount -filer=localhost:8888 -dirListLimit=3600 -dir=./media/" + camera_id + " -filer.path=/" + camera_id + "/snapshots/recordings/"
+    command_line = WEED_FILE + " mount -filer=localhost:8888 -dirListLimit=3600 -dir=./media/" + camera_id + " -filer.path=/" + camera_id + "/snapshots/recordings/"
     args = shlex.split(command_line)
     print(args)
     subprocess.Popen(args)
@@ -109,19 +111,17 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
     f= open("camera.txt","w+")
     cont = 0
     valid = 0
+    print("Getting images...")
     for subdir, dirs, files in sorted(os.walk("media/" + camera_id)):
         for file in sorted(files):
             cont += 1
             path = os.path.join(subdir, file)
             if prevPath is None:
                 prevPath = path
-            print(path)
             s = path.split("/")[-5:]
             if s[0].isdigit():
                 validDay = valid_day(dateFrom, dateTo, s)
                 validHour = valid_hour(schedule, s)
-                print("Day: ", validDay)
-                print("Hour: ", validHour)
                 if validDay and validHour:
                     if date:
                         Analyzer.clean_date()
@@ -135,7 +135,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
                         try:
                             img = Image.open(path)
                             img.verify()
-                            f.write("file '" + path + "'\n")
+                            f.write(path + "\n")
                         except (IOError, SyntaxError) as e:
                             print('Bad file:', path)
                             print(e)
@@ -166,6 +166,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
     command_line = "fusermount -u ./media/" + camera_id
     args = shlex.split(command_line)
     subprocess.Popen(args)
+    
     print("--- %s seconds ---" % (time.time() - start_time))
     
 if __name__ == '__main__':
