@@ -37,7 +37,7 @@ def get_time(s):
 def valid_day(dateFrom, dateTo, s):
     dateFrom = dateFrom.split("/")
     dateTo = dateTo.split("/")
-    
+
     year = int(s[0])
     month = int(s[1])
     day = int(s[2])
@@ -45,20 +45,24 @@ def valid_day(dateFrom, dateTo, s):
     s2 = s[4].split("_")
     minute = int(s2[0])
     second = int(s2[1])
-    
+
     fromyear = int(dateFrom[0])
     frommonth = int(dateFrom[1])
     fromday = int(dateFrom[2])
-    
+    fromhour = int(dateFrom[3])
+    fromminute = int(dateFrom[4])
+
     toyear = int(dateTo[0])
     tomonth = int(dateTo[1])
     today = int(dateTo[2])
-    
-    dtFrom = datetime.datetime(fromyear, frommonth, fromday, 0, 0, 0)
-    dtTo = datetime.datetime(toyear, tomonth, today, 0, 0, 0)
+    tohour = int(dateTo[3])
+    tominute = int(dateTo[4])
+
+    dtFrom = datetime.datetime(fromyear, frommonth, fromday, fromhour, fromminute, 0)
+    dtTo = datetime.datetime(toyear, tomonth, today, tohour, tominute, 0)
     dt = datetime.datetime(year, month, day, hour, minute, second)
-    
-    if dt > dtFrom and dt < dtTo:
+
+    if dt >= dtFrom and dt <= dtTo:
         return True
     else:
         return False
@@ -71,11 +75,9 @@ def valid_hour(schedule, s):
     s2 = s[4].split("_")
     minute = int(s2[0])
     second = int(s2[1])
-    dt = (datetime.datetime(year, month, day, hour, minute, second).weekday() + 1)
+    dt = (datetime.datetime(year, month, day, hour, minute, second).weekday())
     if schedule == "null":
         return True
-    if dt == 7:
-        dt = 0
     if schedule == "full_week":
         return True
     elif schedule == "working_hours":
@@ -121,7 +123,10 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
             s = path.split("/")[-5:]
             if s[0].isdigit():
                 validDay = valid_day(dateFrom, dateTo, s)
-                validHour = valid_hour(schedule, s)
+                if validDay:
+                    validHour = valid_hour(schedule, s)
+                else:
+                    validHour = False
                 if validDay and validHour:
                     if date:
                         Analyzer.clean_date()
@@ -143,7 +148,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
     f.close()
     print("Contador: ", cont)
     print("Valid: ", valid)
-    
+
     f = open("camera.txt", "r")
     lines = f.readlines()
     num_lines = len(lines)
@@ -161,14 +166,14 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
                 write += 1
                 f.write(x)
         f.close()
-            
+
         create_mp4(folder, position, camera_id, title, logo_name, headers)
     command_line = "fusermount -u ./media/" + camera_id
     args = shlex.split(command_line)
     subprocess.Popen(args)
-    
+
     print("--- %s seconds ---" % (time.time() - start_time))
-    
+
 if __name__ == '__main__':
     # camera_id = "casti-etwpd"
     # position = 3
