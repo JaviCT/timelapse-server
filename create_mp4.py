@@ -15,8 +15,7 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
     print(images[0])
     frame = cv2.imread(images[0])
     height, width, layers = frame.shape
-    video = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'MP4V'), 24.0, (width,height))
-    
+    video = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'H264'), 24.0, (width,height))
     for image in images:
         print(image)
         video.write(cv2.imread(image))
