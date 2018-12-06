@@ -95,6 +95,23 @@ def valid_hour(schedule, s):
                 return True
         return False
 
+def check_queue():
+    with open('pending.txt', 'r') as f:
+        lines = f.readlines()
+        num_lines = len(lines)
+    f.close()
+    if num_lines > 0:
+        f = open("pending.txt", "w")
+        write = 0
+        print(lines[0])
+        params = lines[0].split(":")
+        for x in lines:
+            if write != 0:
+                f.write(x)
+            write += 1
+        f.close()
+        main(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9], params[10], params[11], params[12], params[13])
+
 def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo_name, analyze, duration, headers, blur, date, motion):
     WEED_FILE = config('WEED_FILE')
     start_time = time.time()
@@ -152,7 +169,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
     f = open("camera.txt", "r")
     lines = f.readlines()
     num_lines = len(lines)
-    f.close
+    f.close()
     remove = num_lines - (int(duration) * 24)
     if num_lines > 0:
         leave = num_lines - remove
@@ -173,14 +190,4 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
     subprocess.Popen(args)
 
     print("--- %s seconds ---" % (time.time() - start_time))
-
-if __name__ == '__main__':
-    # camera_id = "casti-etwpd"
-    # position = 3
-    # threshold = 100
-    # create = True
-    # analyze = True
-    # blur = False
-    # date = False
-    # motion = True
-    main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo_name, create_mp4, analyze, duration, headers, blur, date, motion)
+    check_queue()
