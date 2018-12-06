@@ -16,36 +16,34 @@ def result():
     f = request.files['logo']
     logo_name = secure_filename(f.filename)
     f.save(os.path.join("./assets/images", logo_name))
-    blur = False
-    date = False
-    motion = False
-    threshold = 100
-    
+    blur = "false"
+    date = "false"
+    motion = "false"
+    threshold = "100"
+
     cmd = "cat /proc/mounts | grep 'SeaweedFS'"
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = ps.communicate()[0]
     output = output.decode('utf-8')
     print(output)
-    if not output:    
+    if not output:
         t = threading.Thread(target=main, args = (request.form['exid'], request.form['camera_id'],request.form['from'], request.form['to'], request.form['schedule'], request.form['position'], threshold, logo_name, request.form['analyze'], request.form['duration'], request.form['headers'], blur, date, motion))
         t.daemon = True
         t.start()
-    
+
         return Response(json.dumps({
             'success': True,
             'status': 200
         }), mimetype=u'application/json')
     else:
-        with open('pending.json', 'w') as outfile:
-            json.dump(request.form, outfile)
-        with open('pending.json') as data_file:    
-            data = json.load(data_file)
-            print(data)
+        with open('pending.txt', 'a') as data:
+            data.write(request.form['exid'] + ":" + request.form['camera_id'] + ":" + request.form['from'] + ":" + request.form['to'] + ":" + request.form['schedule'] + ":" + request.form['position'] + ":" + threshold + ":" + logo_name + ":" + request.form['analyze'] + ":" + request.form['duration'] + ":" + request.form['headers'] + ":" + blur + ":" + date + ":" + motion + "\n")
+            data.close()
         return Response(json.dumps({
             'success': False,
             'status': 204
         }), mimetype=u'application/json')
-    
+
 @app.route('/api2', methods=['POST'])
 
 def result2():
@@ -53,31 +51,29 @@ def result2():
     print(request.form)
 
     logo_name = "none"
-    blur = False
-    date = False
-    motion = False
-    threshold = 100
-    
+    blur = "false"
+    date = "false"
+    motion = "false"
+    threshold = "100"
+
     cmd = "cat /proc/mounts | grep 'SeaweedFS'"
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     output = ps.communicate()[0]
     output = output.decode('utf-8')
     print(output)
-    if not output:    
+    if not output:
         t = threading.Thread(target=main, args = (request.form['exid'], request.form['camera_id'],request.form['from'], request.form['to'], request.form['schedule'], request.form['position'], threshold, logo_name, request.form['analyze'], request.form['duration'], request.form['headers'], blur, date, motion))
         t.daemon = True
         t.start()
-    
+
         return Response(json.dumps({
             'success': True,
             'status': 200
         }), mimetype=u'application/json')
     else:
-        with open('pending.json', 'w') as outfile:
-            json.dump(request.form, outfile)
-        with open('pending.json') as data_file:    
-            data = json.load(data_file)
-            print(data)
+        with open('pending.txt', 'a') as data:
+            data.write(request.form['exid'] + ":" + request.form['camera_id'] + ":" + request.form['from'] + ":" + request.form['to'] + ":" + request.form['schedule'] + ":" + request.form['position'] + ":" + threshold + ":" + logo_name + ":" + request.form['analyze'] + ":" + request.form['duration'] + ":" + request.form['headers'] + ":" + blur + ":" + date + ":" + motion + "\n")
+            data.close()
         return Response(json.dumps({
             'success': False,
             'status': 204

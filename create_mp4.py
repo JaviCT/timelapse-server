@@ -7,7 +7,7 @@ import moviepy.editor as mpe
 def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
     if os.path.exists("result/" + camera_id + ".mp4"):
         os.remove("result/" + camera_id + ".mp4")
-    
+
     f = open("camera.txt", "r")
     temp = f.read().splitlines()
     video_name = 'timelapse.mp4'
@@ -17,9 +17,8 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
     height, width, layers = frame.shape
     video = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'H264'), 24.0, (width,height))
     for image in images:
-        print(image)
         video.write(cv2.imread(image))
-    
+
     cv2.destroyAllWindows()
     video.release()
 
@@ -33,7 +32,7 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
         final = mpe.concatenate_videoclips([video2, video1, video3], method="compose")
     else:
         final = mpe.VideoFileClip('timelapse.mp4')
-            
+
      # Add logo and sponsor
     position1 = ""
     position2 = ""
@@ -53,7 +52,7 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
         # Top-left
         position1 = "top"
         position2 = "left"
-     
+
     if logo_position >= "0":
         if os.path.exists('assets/images/' + logo_name):
             logo = (mpe.ImageClip('assets/images/' + logo_name)
@@ -66,7 +65,7 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
     # Add audio
     if not os.path.exists("result"):
         os.makedirs("result")
-    
+
     if logo_position >= "0" or headers == "true":
         audio_background = mpe.AudioFileClip('assets/audios/music3.mp3')
         final = final.set_audio(audio_background.set_duration(final.duration))
@@ -93,6 +92,8 @@ def create_mp4(assets, logo_position, camera_id, title, logo_name, headers):
         os.remove("intro.mp4")
     if os.path.exists("contact.mp4"):
         os.remove("contact.mp4")
+    if os.path.exists('assets/images/' + logo_name):
+        os.remove('assets/images/' + logo_name)
 
 def upload_mp4(camera_id, title, assets):
     print("Uploading mp4...")
