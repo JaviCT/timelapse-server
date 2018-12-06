@@ -51,10 +51,10 @@ def result2():
     print(request.form)
 
     logo_name = "none"
-    blur = False
-    date = False
-    motion = False
-    threshold = 100
+    blur = "false"
+    date = "false"
+    motion = "false"
+    threshold = "100"
 
     cmd = "cat /proc/mounts | grep 'SeaweedFS'"
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
