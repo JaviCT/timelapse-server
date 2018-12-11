@@ -9,6 +9,7 @@ import calendar
 import ast
 from PIL import Image
 from decouple import config
+import psycopg2
 
 def get_title():
     dt = datetime.datetime.now()
@@ -112,6 +113,21 @@ def check_queue():
         f.close()
         main(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9], params[10], params[11], params[12], params[13])
 
+def update_status(title):
+    DATABASE = config('DATABASE')
+    DB_PORT = config('DB_PORT')
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
+    DB_HOST = config('DB_HOST')
+    try:
+        conn = psycopg2.connect(dbname=DATABASE, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE timelapses SET status=(%s) WHERE exid = (%s)", (5, title));
+        conn.commit()
+        cursor.close()
+    except:
+        print("I am unable to connect to the database")
+
 def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo_name, analyze, duration, headers, blur, date, motion):
     WEED_FILE = config('WEED_FILE')
     start_time = time.time()
@@ -145,7 +161,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
                 else:
                     validHour = False
                 if validDay and validHour:
-                    if date:
+                    if date == "true":
                         Analyzer.clean_date()
                     if analyze == "true":
                         good = Analyzer.main(path, prevPath, folder)
@@ -188,6 +204,7 @@ def main(title, camera_id, dateFrom, dateTo, schedule, position, threshold, logo
     command_line = "fusermount -u ./media/" + camera_id
     args = shlex.split(command_line)
     subprocess.Popen(args)
+    update_status(title)
 
     print("--- %s seconds ---" % (time.time() - start_time))
     check_queue()
