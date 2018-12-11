@@ -14,7 +14,6 @@ class ColorAnalyser():
                 imageA = cv2.resize(imageA, (0,0), fx=0.1, fy=0.1)
                 grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
                 grayB = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-    
                 (score, diff) = compare_ssim(grayA, grayB, full=True)
             except cv2.error as e:
                 print(e)
