@@ -114,13 +114,14 @@ def check_queue():
         main(params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9], params[10], params[11], params[12], params[13])
 
 def update_status(title):
-    DATABASE = config('DATABASE')
-    DB_PORT = config('DB_PORT')
-    DB_USER = config('DB_USER')
-    DB_PASSWORD = config('DB_PASSWORD')
-    DB_HOST = config('DB_HOST')
+    dbname = config('DATABASE')
+    port = config('DB_PORT')
+    user = config('DB_USER')
+    password = config('DB_PASSWORD')
+    host = config('DB_HOST')
     try:
-        conn = psycopg2.connect(dbname=DATABASE, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
+        aux = "dbname='"+dbname+"' user='"+user+"' password='"+password+"' host='"+host+"' port='"+port+"' sslmode='require'"
+        conn = psycopg2.connect(aux)
         cursor = conn.cursor()
         cursor.execute("UPDATE timelapses SET status=(%s) WHERE exid = (%s)", (5, title));
         conn.commit()
